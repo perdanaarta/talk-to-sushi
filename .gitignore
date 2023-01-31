@@ -1,0 +1,4 @@
+.env
+gcloud-key.json
+*test.py
+__pycache__/
