@@ -1,0 +1,5 @@
+discord
+pynacl
+google-cloud-texttospeech
+dacite
+gtts
