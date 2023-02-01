@@ -10,7 +10,7 @@ DISCORD_CLIENT_ID = os.environ["DISCORD_CLIENT_ID"]
 OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
 GCLOUD_API_KEY = os.path.join(os.path.dirname(__file__), "gcloud-key.json")
 
-BOT_NAME = "Rabbit"
+BOT_NAME = "TalkToSushi"
 BOT_INVITE_URL = f"https://discord.com/api/oauth2/authorize?client_id={DISCORD_CLIENT_ID}&permissions=328565073920&scope=bot"
 
 ACTIVITY_NAME = "with SushiMusic! :)"
