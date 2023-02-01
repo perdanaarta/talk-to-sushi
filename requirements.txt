@@ -5,4 +5,4 @@ dacite
 gtts
 openai
 PyYAML
-dotenv
+python-dotenv
