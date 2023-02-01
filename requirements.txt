@@ -3,3 +3,6 @@ pynacl
 google-cloud-texttospeech
 dacite
 gtts
+openai
+PyYAML
+dotenv
