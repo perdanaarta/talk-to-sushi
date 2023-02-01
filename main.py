@@ -1,4 +1,5 @@
 from discord import Intents, Activity
+from discord import app_commands
 from discord.ext import commands
 
 import discord
@@ -18,12 +19,16 @@ class TalkToSushi(commands.Bot):
 
     def run(self):
         logger.info("Starting bot")
-        
         super().run(config.DISCORD_BOT_TOKEN, reconnect=True, log_handler=None)
+
+
+    async def sync_command(self):
+        await self.tree.sync()
 
         
     async def on_ready(self):
         await self.load_extension('cogs')
+        # await self.sync_command()
         try:
             await self.change_presence(
                 activity=Activity(name=config.ACTIVITY_NAME,

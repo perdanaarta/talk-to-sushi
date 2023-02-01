@@ -31,7 +31,7 @@ class gptCog(Cog):
                     messages.append(m)
             completion.BOT_EXAMPLE_CONVOS.append(base.Conversation(messages=messages))
 
-    @app_commands.command(name="chat")
+    @app_commands.command(name="chat", description="Start chatting with me!")
     async def chat_command(self, interaction: discord.Interaction, message: str):
         try:
             # only support creating thread in text channel

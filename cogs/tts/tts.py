@@ -64,9 +64,9 @@ class ttsCog(Cog):
     #     await ctx.respond(f'Default gender set to {gender.lower()}')
 
 
-    @app_commands.command(name='tts')
-    async def slash_tts(self, msg):
-        print(msg)
+    # @app_commands.command(name='tts')
+    # async def slash_tts(self, msg):
+    #     print(msg)
 
     def split_message(self, message: base.Message):
         split_msg = [m.lstrip().rstrip() for m in message.text.split(';')]
