@@ -22,6 +22,8 @@ ALLOWED_SERVER_IDS = [
     801079456244170792,
 ]
 
+LOG_FILE = os.path.join(os.path.dirname(__file__), "log/latest.log")
+
 # ChatGPT config
 SECONDS_DELAY_RECEIVING_MSG = 3  # give a delay for the bot to respond so it can catch multiple messages
 ACTIVE_THREAD_PREFIX = "💬✅"

@@ -1,5 +1,5 @@
 import logging
-import os
+import config
 
 class CustomFormatter(logging.Formatter):
 
@@ -24,7 +24,7 @@ class CustomFormatter(logging.Formatter):
         return formatter.format(record)
 
 logging.basicConfig(
-    filename=os.path.join(os.path.dirname(__file__), "log/main.log"),
+    filename=config.LOG_FILE,
     format="[%(asctime)s] [%(levelname)s] [%(filename)s:%(lineno)d] %(message)s")
 
 logger = logging.getLogger(__name__)
