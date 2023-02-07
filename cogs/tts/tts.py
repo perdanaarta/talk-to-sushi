@@ -41,12 +41,11 @@ class ttsCog(Cog):
         
         # Try to disconnect if there's no member in voice channel
         try:
-            await asyncio.sleep(10)
             if not member.bot and after.channel != guild.voice_client.channel:
+                await asyncio.sleep(5)
                 if not [m for m in before.channel.members if not m.bot]:
                     await guild.voice_client.disconnect()
         except: pass
-
 
     @Cog.listener('on_message')
     async def text_tts(self, msg: discord.Message):
