@@ -62,7 +62,7 @@ class GuildPlayer():
             return
         
         TalkToSpeechWrapper(msg).save(f'{self.guild.id}.wav')
-        logger.info(f"<{msg.user}> saying: {msg.text}")
+        logger.info(f"<{msg.user}> Saying: {msg.text}")
         self.playback()
 
     def playback(self):
