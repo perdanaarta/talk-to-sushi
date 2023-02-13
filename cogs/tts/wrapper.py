@@ -41,11 +41,10 @@ class TalkToSpeechWrapper():
 
         msg = self.is_wavenet(msg)
 
-        if msg.lang in languages:
-            return self.gtts(msg)
-
-        else:
+        if msg.lang in wavenet_support:
             return self.gcs(msg)
+        else:
+            return self.gtts(msg)
 
 
     def is_wavenet(self, msg: base.Message):
