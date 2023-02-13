@@ -5,4 +5,4 @@ set -e
 cd "$(dirname "$0")"
 
 source "./.venv/bin/activate"
-python3 ./main.py
+python3 ./src/main.py

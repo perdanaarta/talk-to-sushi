@@ -1,6 +1,6 @@
 .env
 .venv/
-gcloud-key.json
+*key.json
 *test.py
 *.log
 __pycache__/

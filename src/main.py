@@ -39,6 +39,10 @@ class TalkToSushi(commands.Bot):
         logger.info(f"{config.BOT_NAME} ready.")
 
 
+    async def on_disconnect(self):
+        logger.warning("Disconnected from discord")
+
+
     async def on_error(self, err, *args, **kwargs):
         raise 
 

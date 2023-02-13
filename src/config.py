@@ -1,6 +1,5 @@
 import os
 import discord
-import logging
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -8,7 +7,7 @@ load_dotenv()
 DISCORD_BOT_TOKEN = os.environ["DISCORD_BOT_TOKEN"]
 DISCORD_CLIENT_ID = os.environ["DISCORD_CLIENT_ID"]
 OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
-GCLOUD_API_KEY = os.path.join(os.path.dirname(__file__), "gcloud-key.json")
+GCLOUD_API_KEY = os.path.join(os.path.dirname(__file__), "../" + os.environ["GCLOUD_API_KEY"])
 
 BOT_NAME = "TalkToSushi"
 BOT_INVITE_URL = f"https://discord.com/api/oauth2/authorize?client_id={DISCORD_CLIENT_ID}&permissions=328565073920&scope=bot"
@@ -22,7 +21,7 @@ ALLOWED_SERVER_IDS = [
     801079456244170792,
 ]
 
-LOG_FILE = os.path.join(os.path.dirname(__file__), "log/latest.log")
+LOG_FILE = os.path.join(os.path.dirname(__file__), "../logs/latest.log")
 
 # ChatGPT config
 SECONDS_DELAY_RECEIVING_MSG = 3  # give a delay for the bot to respond so it can catch multiple messages
