@@ -25,11 +25,12 @@ class TalkToSpeechWrapper():
 
     def connect_gcloud(self):
         global gcloud
-        try:
-            if gcloud is None:
+        
+        if gcloud is None:
+            try:
                 gcloud = TextToSpeechClient.from_service_account_file(config.GCLOUD_API_KEY)
-        except:
-            gcloud = None
+            except:
+                gcloud = None
 
         return gcloud
 
