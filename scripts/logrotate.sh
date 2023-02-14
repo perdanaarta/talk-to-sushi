@@ -1,8 +1,9 @@
-#!/bin/bash
+#!/usr/bin/bash
 
 set -e
 
-script_dir=$(dirname "$0")
+home="$(dirname "$0")/.."
+log_dir=$home/logs
 
-mv $script_dir/../logs/latest.log $script_dir/../logs/$(date '+%Y-%m-%d').log
-touch $script_dir/../logs/latest.log
+mv $log_dir/latest.log $log_dir/$(date '+%Y-%m-%d').log
+touch $log_dir/latest.log

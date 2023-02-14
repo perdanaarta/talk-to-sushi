@@ -6,5 +6,5 @@ home="$(dirname "$0")/.."
 source $home/.env
 python=python$PYTHON_VERSION
 
-source $home/.venv/bin/activate
-$python $home/src/main.py
+mkdir $home/.venv
+$python -m venv $home/.venv
