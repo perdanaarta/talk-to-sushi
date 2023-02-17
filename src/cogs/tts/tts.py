@@ -116,6 +116,7 @@ class ttsCog(Cog):
         if msg.content.startswith(";"):
             await self.process_command(ctx)
 
+
     # @app_commands.command(name='default_voice')
     # @app_commands.option('gender', choices=['Male', 'Female'])
     # async def set_default_voice(self, ctx: Context, gender: str):
@@ -126,32 +127,6 @@ class ttsCog(Cog):
     # @app_commands.command(name='tts')
     # async def slash_tts(self, msg):
     #     print(msg)
-
-    async def process_message(self, message: discord.Message) -> InputMessage:
-        clean_msg = re.sub(r'<.+?>', '', message.content.strip(';').strip())
-        if clean_msg == "":
-            return None
-
-        split_msg = [m.lstrip().rstrip() for m in clean_msg.split(';')]
-        text = None
-        config = VoiceConfig()
-        
-        if len(split_msg) < 2:
-            text = " ".join(split_msg)
-
-        else:
-            for i, msg in enumerate(split_msg):
-                if msg in languages:
-                    config.lang = msg
-
-                elif msg in ['male', 'female']:
-                    config.gender = msg
-
-                else:
-                    text =  " ".join(split_msg[i:])
-                    break
-        
-        return InputMessage(message.author, text, config)
 
 
     async def process_command(self, ctx: Context):
@@ -183,3 +158,30 @@ class ttsCog(Cog):
             player.play(input)
         except Exception as e:
             logger.error(e)
+
+
+    async def process_message(self, message: discord.Message) -> InputMessage:
+        clean_msg = re.sub(r'<.+?>', '', message.content.strip(';').strip())
+        if clean_msg == "":
+            return None
+
+        split_msg = [m.lstrip().rstrip() for m in clean_msg.split(';')]
+        text = None
+        config = VoiceConfig()
+        
+        if len(split_msg) < 2:
+            text = " ".join(split_msg)
+
+        else:
+            for i, msg in enumerate(split_msg):
+                if msg in languages:
+                    config.lang = msg
+
+                elif msg in ['male', 'female']:
+                    config.gender = msg
+
+                else:
+                    text =  " ".join(split_msg[i:])
+                    break
+        
+        return InputMessage(message.author, text, config)
