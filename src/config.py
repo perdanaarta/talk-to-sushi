@@ -9,10 +9,10 @@ DISCORD_CLIENT_ID = os.environ["DISCORD_CLIENT_ID"]
 OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
 GCLOUD_API_KEY = os.path.join(os.path.dirname(__file__), "../" + os.environ["GCLOUD_API_KEY"])
 
-BOT_NAME = "TalkToSushi"
+BOT_NAME = os.environ["BOT_NAME"]
 BOT_INVITE_URL = f"https://discord.com/api/oauth2/authorize?client_id={DISCORD_CLIENT_ID}&permissions=328565073920&scope=bot"
 
-ACTIVITY_NAME = "with SushiMusic! :)"
+ACTIVITY_NAME = "setting app on my phone. It's fun."
 ACTIVITY_TYPE = discord.ActivityType.playing
 
 ALLOWED_SERVER_IDS = [

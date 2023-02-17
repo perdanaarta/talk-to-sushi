@@ -1,13 +1,32 @@
+from dataclasses import dataclass
+from typing import Optional
 from gtts import gTTS
 from google.cloud.texttospeech import TextToSpeechClient, SynthesisInput, AudioConfig, AudioEncoding, VoiceSelectionParams
 
-from . import base
 from .dictionary import languages, wavenets, wavenet_support, accents
 from main import config
 
-import os, json
-
 gcloud = None
+
+@dataclass
+class VoiceConfig:
+    lang: Optional[str] = None
+    name: Optional[str] = None
+    gender: Optional[str] = None
+    rate: Optional[float] = None
+    pitch: Optional[float] = None
+
+@dataclass
+class VoiceResult:
+    text: str
+    audio: str
+
+    def save(self, path):
+        """Save into audio file"""
+
+        with open(path, "wb") as out:
+            out.write(self.audio)
+
 class TalkToSpeechWrapper():
     """:params:
     
@@ -16,11 +35,8 @@ class TalkToSpeechWrapper():
     'rate' = Speaking rate of the voice
     'pitch' = Pitch for the voice
     """
-    def __init__(self, msg: base.Message):
-        self.gcloud = self.connect_gcloud()        
-
-        self.text = msg.text
-        self.audio = self.talk_to_speech(msg)
+    def __init__(self):
+        self.gcloud = self.connect_gcloud()
 
 
     def connect_gcloud(self):
@@ -35,45 +51,55 @@ class TalkToSpeechWrapper():
         return gcloud
 
             
-    def talk_to_speech(self, msg: base.Message) -> bytes:
-        if self.gcloud == None:
-            return self.gtts(msg)
+    def synthesize_speech(self, input: str, config: VoiceConfig) -> VoiceResult:
+        """Transform text into audio"""            
 
-        msg = self.is_wavenet(msg)
+        config, engine = self.check_config(config)
+        if engine == "gtts" or self.gcloud == None:
+            audio = self.gtts(input, config)
 
-        if msg.lang in wavenet_support:
-            return self.gcs(msg)
-        else:
-            return self.gtts(msg)
+        elif engine == "gcs":
+            audio = self.gcs(input, config)
+
+        return VoiceResult(input, audio)
 
 
-    def is_wavenet(self, msg: base.Message):
-        def get_wavenet(g):
-            for wn in wavenets[msg.lang]:
-                if wn['gender'].lower() == g:
+    def check_config(self, config: VoiceConfig) -> tuple[str, VoiceConfig]:
+        """Checking if config is using gtts engine or gcs engine"""
+
+        def get_wavenet(gender):
+            for wn in wavenets[config.lang]:
+                if wn['gender'].lower() == gender:
                     return wn['name']
 
-        if msg.lang in wavenet_support and msg.gender is not None:
-            msg.lang = wavenet_support[msg.lang]
-            msg.name = get_wavenet(msg.gender)
+        if config.lang in wavenet_support and config.gender is not None:
+            config.lang = wavenet_support[config.lang]
+            config.name = get_wavenet(config.gender)
 
-        elif msg.lang in accents:
-            msg.lang = wavenet_support[msg.lang]
-            msg.name = get_wavenet('female')
+        elif config.lang in accents:
+            config.lang = wavenet_support[config.lang]
+            config.name = get_wavenet('female')
 
-        return msg
-        
+        if config.lang in wavenet_support:
+            engine = "gcs"
+        else:
+            engine = "gtts"
 
-    def gtts(self, msg: base.Message) -> bytes:
+        return config, engine
+
+
+    def gtts(self, text: str, config: VoiceConfig) -> bytes:
         """Transform text into audio bytes using gtts"""
-        text = msg.text
-        lang = "en" if msg.lang is None else msg.lang
+
+        lang = "en" if config.lang is None else config.lang
 
         def process(text: str):
-            for decoded in (gTTS(text, 'com', lang).stream()): 
-                return(decoded)
-        try: 
+            for bit in (gTTS(text, 'com', lang).stream()): 
+                return(bit)
+                
+        try:
             audio_data, line = b'', ""
+
             for word in text.split(" "):
                 if len(line) + 1 + len(word) > 100:
                     audio_data += process(line)
@@ -89,14 +115,14 @@ class TalkToSpeechWrapper():
         except:
             return process('please dont abuse me')
     
-    def gcs(self, msg: base.Message) -> bytes:
+
+    def gcs(self, text: str, config: VoiceConfig) -> bytes:
         """Transform text into audio bytes using gcs text to speech"""
 
-        text = msg.text
-        lang = msg.lang
-        name = msg.name
-        rate = 1.0 if msg.rate is None else msg.rate
-        pitch = 0.0 if msg.pitch is None else msg.pitch
+        lang = config.lang
+        name = config.name
+        rate = 1.0 if config.rate is None else config.rate
+        pitch = 0.0 if config.pitch is None else config.pitch
 
         text_input = SynthesisInput(text=text)
         audio_config = AudioConfig(
@@ -113,10 +139,5 @@ class TalkToSpeechWrapper():
         response = self.gcloud.synthesize_speech(input=text_input,
                                                  voice=voice_params,
                                                  audio_config=audio_config)
-        
+
         return response.audio_content
-    
-    def save(self, path):
-        """Save into audio file"""
-        with open(path, "wb") as out:
-            out.write(self.audio)
