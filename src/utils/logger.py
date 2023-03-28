@@ -5,6 +5,7 @@ import config
 
 logger = logging.getLogger("discord")
 logger.setLevel(logging.DEBUG)
+logging.getLogger('discord.player').setLevel(logging.ERROR)
 
 class StreamFormatter(logging.Formatter):
     LEVEL_COLOURS = [
@@ -58,4 +59,3 @@ fhandler = logging.handlers.RotatingFileHandler(
 fhandler.setFormatter(flog_format)
 fhandler.setLevel(logging.INFO)
 logger.addHandler(fhandler)
-

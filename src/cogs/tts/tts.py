@@ -117,17 +117,20 @@ class ttsCog(Cog):
             await ctx.send('User is not in accessible voice channel!')
             return
 
-        try:
+        player = await GuildPlayerManager.get(ctx.guild)
+        if player is None:
             try:
-                voice = await ctx.author.voice.channel.connect()
-            except:
-                voice = discord.utils.get(self.bot.voice_clients, guild=ctx.author.guild)
-            player = await GuildPlayerManager.get(ctx.guild, voice)
+                try:
+                    voice = await ctx.author.voice.channel.connect()
+                except:
+                    voice = discord.utils.get(self.bot.voice_clients, guild=ctx.author.guild)
 
-        except Exception as e:
-            logger.error(e)
-            await ctx.send('Cannot connect to voice channel!')
-            return
+                player = await GuildPlayerManager.get(ctx.guild, voice)
+            
+            except Exception as e:
+                logger.error(e)
+                await ctx.send('Cannot connect to voice channel!')
+                return
         
         input = await self.process_message(ctx.message)
         if input == None:

@@ -3,4 +3,5 @@
 *key.json
 *test.py
 *.log
+*.wav
 __pycache__/
