@@ -48,6 +48,7 @@ async def generate_completion_response(
             convo=Conversation(messages + [Message(BOT_NAME)]),
         )
         rendered = prompt.render()
+        print(rendered)
         response = openai.Completion.create(
             engine="text-davinci-002",
             prompt=rendered,

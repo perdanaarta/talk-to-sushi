@@ -1,58 +1,47 @@
-from discord import Intents, Activity
-from discord import app_commands
-from discord.ext import commands
-
+import os
+import pathlib
 import discord
+from discord.ext.commands import Bot
 
 import config
-from logger import logger
+from utils.logger import logger
 
-class TalkToSushi(commands.Bot):
-    """
-    A weak Discord Talk to Speech
-    """
-    def __init__(self):
-        super().__init__(intents=Intents.all(),
-                         help_command=None,
-                         command_prefix="<|not a goddamn placeholder|>")
-        
+class ArtaBot(Bot):
+    def __init__(self) -> None:
+        super().__init__(
+            intents=discord.Intents.all(),
+            help_command=None,
+            command_prefix="$"
+        )
 
-    def run(self):
-        logger.info("Starting bot")
+    def run(self) -> None:
         super().run(config.DISCORD_BOT_TOKEN, reconnect=True, log_handler=None)
 
-
-    async def sync_command(self):
-        await self.tree.sync()
-
+    async def load_cogs(self):
+        logger.info("Loading cogs...")
+        ignore_list = []
+        cog_dir = pathlib.Path(os.path.join(config.SRC_DIR, "./cogs"))
+        for cog in cog_dir.iterdir():
+            if "__" not in cog.name and cog.name not in ignore_list:
+                try:
+                    await self.load_extension(f"cogs.{cog.name}.{cog.name}")
+                    logger.info(f"[{cog.name}] cog loaded.")
+                except Exception as e:
+                    logger.warning(e)
         
     async def on_ready(self):
-        await self.load_extension('cogs')
-        # await self.sync_command()
+        await self.load_cogs()
         try:
             await self.change_presence(
-                activity=Activity(name=config.ACTIVITY_NAME,
-                                  type=config.ACTIVITY_TYPE)
+                activity=discord.Activity(name=config.ACTIVITY_NAME, type=config.ACTIVITY_TYPE)
             )
         except: pass
         logger.info(f"Connected to Discord (latency: {self.latency*1000:,.0f} ms).")
         logger.info(f"{config.BOT_NAME} ready.")
 
 
-    async def on_disconnect(self):
-        logger.warning("Disconnected from discord")
-
-
-    async def on_error(self, err, *args, **kwargs):
-        raise 
-
-
-    async def on_command_error(self, ctx, exc):
-        raise getattr(exc, "original", exc)
-
-
 def main():
-    bot = TalkToSushi()
+    bot = ArtaBot()
     bot.run()
 
 

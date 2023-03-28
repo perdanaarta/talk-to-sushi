@@ -8,11 +8,11 @@ from main import config
 
 from . import base
 from . import completion
-from . utils import close_thread, is_last_message_stale, discord_message_to_message
-from . completion import generate_completion_response, process_response
+from .utils import close_thread, is_last_message_stale, discord_message_to_message
+from .completion import generate_completion_response, process_response
 
 
-class gptCog(Cog):
+class ChatCog(Cog):
     def __init__(self, bot: Bot) -> None:
         super().__init__()
         self.bot = bot
@@ -162,3 +162,6 @@ class gptCog(Cog):
             )
         except Exception as e:
             logger.exception(e)
+
+async def setup(bot):
+    await bot.add_cog(ChatCog(bot))
