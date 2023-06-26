@@ -1,10 +1,6 @@
-#!/usr/bin/bash
- 
-set -e
+#!/bin/bash
 
 home="$(dirname "$0")/.."
-source $home/.env
-python=python$PYTHON_VERSION
 
 source $home/.venv/bin/activate
-$python $home/src/main.py
+python3.10 $home/src/main.py

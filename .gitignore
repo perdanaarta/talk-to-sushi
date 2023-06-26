@@ -1,7 +1,10 @@
+data/*
+!.gitkeep
 .env
 .venv/
 *key.json
 *test.py
 *.log
 *.wav
+.vscode
 __pycache__/

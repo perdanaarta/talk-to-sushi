@@ -1,14 +1,20 @@
-import os, discord
+import os
+import discord
 from dotenv import load_dotenv
+
 load_dotenv()
+
+ROOT = os.path.dirname(__file__)
+LOG_FILE = os.path.join(ROOT, "../logs/latest.log")
 
 DISCORD_BOT_TOKEN = os.environ["DISCORD_BOT_TOKEN"]
 DISCORD_CLIENT_ID = os.environ["DISCORD_CLIENT_ID"]
-OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
-GCLOUD_API_KEY = os.path.join(os.path.dirname(__file__), "../" + os.environ["GCLOUD_API_KEY"])
 
 BOT_NAME = os.environ["BOT_NAME"]
 BOT_INVITE_URL = f"https://discord.com/api/oauth2/authorize?client_id={DISCORD_CLIENT_ID}&permissions=328565073920&scope=bot"
+
+OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
+GCLOUD_API_AUTH_FILENAME = os.path.join(ROOT, "../" + os.environ["GCLOUD_API_KEY"])
 
 SUPERUSER = [
     458449942370058271
@@ -22,9 +28,6 @@ ALLOWED_SERVER_IDS = [
 
 ACTIVITY_NAME = "Under Construction ⚒️"
 ACTIVITY_TYPE = discord.ActivityType.playing
-
-SRC_DIR = os.path.dirname(__file__)
-LOG_FILE = os.path.join(SRC_DIR, "../logs/latest.log")
 
 SECONDS_DELAY_RECEIVING_MSG = 3  # give a delay for the bot to respond so it can catch multiple messages
 ACTIVE_THREAD_PREFIX = "💬✅"

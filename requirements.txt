@@ -1,8 +1,14 @@
 discord
 pynacl
 google-cloud-texttospeech
-dacite
 gtts
+python-dotenv
+yt_dlp
+ffmpeg
+pydub
+demucs
+ipython
+so-vits-svc-fork
+dacite
 openai
 PyYAML
-python-dotenv

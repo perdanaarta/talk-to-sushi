@@ -4,15 +4,16 @@ import discord
 import os
 import re
 
-from main import logger
-from . wrapper import TalkToSpeechWrapper, VoiceConfig
-from . dictionary import languages
+from main import logger, config
+from engine.text_to_speech import Dictionary, TextToSpeech
+
 
 @dataclass
 class InputMessage:
     user: str
     text: str
-    config: VoiceConfig
+    language: str
+    gender: str = None
 
 
 class GuildPlayer:
@@ -22,6 +23,8 @@ class GuildPlayer:
         self.queue = []
         self.playing = False
         self.audio_path = os.path.join(os.path.dirname(__file__), f"../../../.temp/{self.guild.id}.wav")
+
+        TextToSpeech.gcloud_connect_from_file(config.GCLOUD_API_KEY)
 
     def play(self, msg):
         self.queue.append(msg)
@@ -35,9 +38,14 @@ class GuildPlayer:
             os.remove(self.audio_path)
             self.playing = False
             return
-        
-        tts = TalkToSpeechWrapper()
-        tts.synthesize_speech(msg.text, msg.config).save(self.audio_path)
+
+        tts = TextToSpeech(
+            text=msg.text,
+            language=msg.language,
+            gender=msg.gender
+        )
+        tts.convert()
+        tts.save(self.audio_path)
         logger.info(f"<{msg.user}> Saying: {msg.text}")
         self.__playback()
 
@@ -45,10 +53,10 @@ class GuildPlayer:
         self.playing = True
         try:
             self.voice.play(discord.FFmpegPCMAudio(
-                source = self.audio_path,
-                options = '-loglevel warning'
+                source=self.audio_path,
+                options='-loglevel warning'
             ),
-            after=lambda _: self.__advance())
+                after=lambda _: self.__advance())
 
         except Exception as e:
             logger.error(e)
@@ -70,7 +78,7 @@ class GuildPlayerManager:
                 return cls.instances[guild.id]
             except:
                 return None
-            
+
     @classmethod
     async def destroy(cls, guild: discord.Guild) -> None:
         try:
@@ -96,13 +104,14 @@ class ttsCog(Cog):
         # Clean instance if bot disconnected
         if member.id == self.bot.application_id and after.channel is None:
             await GuildPlayerManager.destroy(guild)
-        
+
         # Try to disconnect if there's no member in voice channel
         try:
             if not member.bot and after.channel != guild.voice_client.channel:
                 if not [m for m in before.channel.members if not m.bot]:
                     await guild.voice_client.disconnect()
-        except: pass
+        except:
+            pass
 
     @Cog.listener('on_message')
     async def on_message(self, msg: discord.Message):
@@ -123,15 +132,16 @@ class ttsCog(Cog):
                 try:
                     voice = await ctx.author.voice.channel.connect()
                 except:
-                    voice = discord.utils.get(self.bot.voice_clients, guild=ctx.author.guild)
+                    voice = discord.utils.get(
+                        self.bot.voice_clients, guild=ctx.author.guild)
 
                 player = await GuildPlayerManager.get(ctx.guild, voice)
-            
+
             except Exception as e:
                 logger.error(e)
                 await ctx.send('Cannot connect to voice channel!')
                 return
-        
+
         input = await self.process_message(ctx.message)
         if input == None:
             return
@@ -148,24 +158,26 @@ class ttsCog(Cog):
 
         split_msg = [m.lstrip().rstrip() for m in clean_msg.split(';')]
         text = None
-        config = VoiceConfig()
-        
+        language = 'en'
+        gender = None
+
         if len(split_msg) < 2:
             text = " ".join(split_msg)
 
         else:
             for i, msg in enumerate(split_msg):
-                if msg in languages:
-                    config.lang = msg
+                if msg in Dictionary.languages:
+                    language = msg
 
                 elif msg in ['male', 'female']:
-                    config.gender = msg
+                    gender = msg
 
                 else:
-                    text =  " ".join(split_msg[i:])
+                    text = " ".join(split_msg[i:])
                     break
-        
-        return InputMessage(message.author, text, config)
-    
+
+        return InputMessage(message.author, text, language, gender)
+
+
 async def setup(bot):
     await bot.add_cog(ttsCog(bot))
