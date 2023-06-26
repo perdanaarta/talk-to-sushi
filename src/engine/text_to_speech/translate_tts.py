@@ -12,7 +12,7 @@ class TranslateTTS():
         """Convert text into audio bytes using Translate tts"""
 
         def process(text: str):
-            for b in (gTTS(self.text, self.tld, self.language)):
+            for b in (gTTS(self.text, self.tld, self.language).stream()):
                 return b
 
         try:

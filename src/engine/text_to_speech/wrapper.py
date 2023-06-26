@@ -115,7 +115,7 @@ class TextToSpeech():
             self.result = GoogleTTS(
                 self.gcloud, self.text, self.language, self.voice_name, self.rate, self.pitch
             ).convert()
-
+        
         if self.engine == 'translate':
             if self.language in Dictionary.accents:
                 self.language = 'en'
@@ -128,4 +128,4 @@ class TextToSpeech():
     
     def save(self, filename: str):
         with open(filename, "wb") as out:
-            out.write(self.audio)
+            out.write(self.result)

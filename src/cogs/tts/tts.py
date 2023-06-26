@@ -1,99 +1,13 @@
-from dataclasses import dataclass
-from discord.ext.commands import Cog, Bot, Context
-import discord
-import os
 import re
+import discord
+from discord.ext.commands import Bot, Cog, Context
 
-from main import logger, config
-from engine.text_to_speech import Dictionary, TextToSpeech
-
-
-@dataclass
-class InputMessage:
-    user: str
-    text: str
-    language: str
-    gender: str = None
+from engine.text_to_speech import TextToSpeech, Dictionary
+from main import config, logger
+from .player import PlayerManager, Player
 
 
-class GuildPlayer:
-    def __init__(self, guild: discord.Guild, voice: discord.VoiceClient) -> None:
-        self.guild = guild
-        self.voice = voice
-        self.queue = []
-        self.playing = False
-        self.audio_path = os.path.join(os.path.dirname(__file__), f"../../../.temp/{self.guild.id}.wav")
-
-        TextToSpeech.gcloud_connect_from_file(config.GCLOUD_API_KEY)
-
-    def play(self, msg):
-        self.queue.append(msg)
-        if not self.playing:
-            self.__advance()
-
-    def __advance(self):
-        try:
-            msg: InputMessage = self.queue.pop()
-        except IndexError:
-            os.remove(self.audio_path)
-            self.playing = False
-            return
-
-        tts = TextToSpeech(
-            text=msg.text,
-            language=msg.language,
-            gender=msg.gender
-        )
-        tts.convert()
-        tts.save(self.audio_path)
-        logger.info(f"<{msg.user}> Saying: {msg.text}")
-        self.__playback()
-
-    def __playback(self):
-        self.playing = True
-        try:
-            self.voice.play(discord.FFmpegPCMAudio(
-                source=self.audio_path,
-                options='-loglevel warning'
-            ),
-                after=lambda _: self.__advance())
-
-        except Exception as e:
-            logger.error(e)
-
-
-class GuildPlayerManager:
-    instances = {}
-
-    @classmethod
-    async def get(cls, guild: discord.Guild, voice: discord.VoiceClient = None) -> GuildPlayer:
-        if guild.id in cls.instances:
-            return cls.instances[guild.id]
-
-        if voice is None:
-            return None
-        else:
-            try:
-                cls.instances[guild.id] = GuildPlayer(guild, voice)
-                return cls.instances[guild.id]
-            except:
-                return None
-
-    @classmethod
-    async def destroy(cls, guild: discord.Guild) -> None:
-        try:
-            await guild.voice_client.disconnect()
-        except Exception as e:
-            # logger.error(e)
-            pass
-
-        try:
-            del cls.instances[guild.id]
-        except Exception as e:
-            logger.error(e)
-
-
-class ttsCog(Cog):
+class TTSCog(Cog):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
 
@@ -103,7 +17,7 @@ class ttsCog(Cog):
 
         # Clean instance if bot disconnected
         if member.id == self.bot.application_id and after.channel is None:
-            await GuildPlayerManager.destroy(guild)
+            await PlayerManager.destroy(guild)
 
         # Try to disconnect if there's no member in voice channel
         try:
@@ -126,33 +40,33 @@ class ttsCog(Cog):
             await ctx.send('User is not in accessible voice channel!')
             return
 
-        player = await GuildPlayerManager.get(ctx.guild)
+        player = await self.__get_player(ctx)
+        tts = await self.__get_text_to_speech(ctx)
+
         if player is None:
-            try:
-                try:
-                    voice = await ctx.author.voice.channel.connect()
-                except:
-                    voice = discord.utils.get(
-                        self.bot.voice_clients, guild=ctx.author.guild)
-
-                player = await GuildPlayerManager.get(ctx.guild, voice)
-
-            except Exception as e:
-                logger.error(e)
-                await ctx.send('Cannot connect to voice channel!')
-                return
-
-        input = await self.process_message(ctx.message)
-        if input == None:
             return
 
-        try:
-            player.play(input)
-        except Exception as e:
-            logger.error(e)
+        player.add_to_queue(ctx.author, tts)
+        player.play()
 
-    async def process_message(self, message: discord.Message) -> InputMessage:
-        clean_msg = re.sub(r'<.+?>', '', message.content.strip(';').strip())
+    async def __get_player(self, ctx: Context):
+        player = await PlayerManager.get(ctx.guild)
+        if player is None:
+            try:
+                voice = discord.utils.get(self.bot.voice_clients, guild=ctx.author.guild)
+                if voice == None:
+                    voice = await ctx.author.voice.channel.connect()
+
+                player = await PlayerManager.get(ctx.guild, voice)
+
+            except Exception as e:
+                await ctx.send('Cannot connect to voice channel!')
+                logger.error(e)
+
+        return player
+
+    async def __get_text_to_speech(self, ctx: Context):
+        clean_msg = re.sub(r'<.+?>', '', ctx.message.content.strip(';').strip())
         if clean_msg == "":
             return None
 
@@ -176,8 +90,7 @@ class ttsCog(Cog):
                     text = " ".join(split_msg[i:])
                     break
 
-        return InputMessage(message.author, text, language, gender)
-
+        return TextToSpeech(text=text, language=language, gender=gender)
 
 async def setup(bot):
-    await bot.add_cog(ttsCog(bot))
+    await bot.add_cog(TTSCog(bot))
